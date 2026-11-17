@@ -367,7 +367,7 @@ const UPGRADE_MAP = new Map(UPGRADES.map((u) => [u.id, u]));
 function baseStats() {
   return {
     speed: 330,
-    fireInterval: 0.165,
+    fireInterval: 0.175,
     damage: 12,
     bulletSpeed: 1040,
     bulletSize: 1,
@@ -377,10 +377,10 @@ function baseStats() {
     crit: 0.06,
     critMult: 2,
     magnet: 120,
-    dashCd: 2.4,
+    dashCd: 2.9,
     dashBoom: 0,
-    shieldRegen: 9,
-    shieldMax: 50,
+    shieldRegen: 6,
+    shieldMax: 40,
     maxHp: 100,
     vampEvery: 0,
   };
@@ -432,7 +432,7 @@ function createGame(mode = "menu") {
     comboMax: 3.1,
     level: 1,
     xp: 0,
-    xpNeed: 7,
+    xpNeed: 9,
     pendingLevels: 0,
     stats: baseStats(),
     upgrades: {},
@@ -526,7 +526,7 @@ function startGame() {
   game.wave = 0;
   startWave(1);
   updateHUD(true);
-  toast(game.touch ? "Sürükle: hareket · ATIL: atılma" : "SPACE: atılma · Enerji kristallerini topla");
+  toast(game.touch ? "ZOR MOD · Sürükle: hareket · ATIL: atılma" : "ZOR MOD · SPACE: atılma · Enerji kristallerini topla");
 }
 
 function goMenu() {

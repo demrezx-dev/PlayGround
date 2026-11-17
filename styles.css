@@ -409,6 +409,15 @@ body.touch .dash-readout { display: none; }
   color: var(--faint); text-transform: uppercase;
 }
 .eyebrow.center { justify-content: center; }
+.hard-tag {
+  padding: 2px 7px;
+  font-size: 8px; letter-spacing: 0.22em;
+  color: var(--red);
+  border: 1px solid rgba(255, 95, 109, 0.55);
+  border-radius: 999px;
+  background: rgba(255, 95, 109, 0.09);
+  text-shadow: 0 0 12px rgba(255, 95, 109, 0.55);
+}
 .dot {
   width: 5px; height: 5px; border-radius: 50%; background: var(--cyan);
   box-shadow: 0 0 10px var(--cyan); animation: pulse 2.2s ease-in-out infinite;

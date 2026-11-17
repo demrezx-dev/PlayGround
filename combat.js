@@ -3,11 +3,11 @@
 /* ------------------------------------------------------- enemy data */
 
 const TYPES = {
-  drifter: { hp: 24, speed: 98, r: 15, dmg: 11, score: 12, xp: 1, color: C.magenta, sides: 4, inner: 0.48, spin: 0.8 },
-  hunter: { hp: 17, speed: 162, r: 13, dmg: 10, score: 16, xp: 1, color: C.amber, sides: 3, inner: 1, spin: 0 },
-  shooter: { hp: 34, speed: 84, r: 18, dmg: 9, score: 22, xp: 2, color: C.violet, sides: 6, inner: 0.86, spin: -0.4 },
-  brute: { hp: 118, speed: 60, r: 30, dmg: 20, score: 52, xp: 4, color: C.orange, sides: 5, inner: 0.8, spin: 0.35 },
-  boss: { hp: 760, speed: 72, r: 58, dmg: 30, score: 600, xp: 16, color: C.magenta, sides: 12, inner: 0.78, spin: 0.3 },
+  drifter: { hp: 24, speed: 106, r: 15, dmg: 14, score: 12, xp: 1, color: C.magenta, sides: 4, inner: 0.48, spin: 0.8 },
+  hunter: { hp: 17, speed: 172, r: 13, dmg: 13, score: 16, xp: 1, color: C.amber, sides: 3, inner: 1, spin: 0 },
+  shooter: { hp: 34, speed: 88, r: 18, dmg: 12, score: 22, xp: 2, color: C.violet, sides: 6, inner: 0.86, spin: -0.4 },
+  brute: { hp: 118, speed: 64, r: 30, dmg: 26, score: 52, xp: 4, color: C.orange, sides: 5, inner: 0.8, spin: 0.35 },
+  boss: { hp: 820, speed: 76, r: 58, dmg: 38, score: 600, xp: 16, color: C.magenta, sides: 12, inner: 0.78, spin: 0.3 },
 };
 
 /* ---------------------------------------------------------- spawning */
@@ -19,22 +19,23 @@ function startWave(n) {
   const queue = [];
   if (boss) {
     queue.push("boss");
-    const extra = 2 + Math.floor(n / 5) * 2;
+    const extra = 3 + Math.floor(n / 5) * 2;
     for (let i = 0; i < extra; i += 1) queue.push(i % 2 ? "hunter" : "drifter");
   } else {
-    let count = Math.round(4 + n * 1.8);
-    count = Math.min(count, 26 + Math.floor(n * 1.1));
+    let count = Math.round(5 + n * 2.2);
+    count = Math.min(count, 30 + Math.floor(n * 1.5));
     const pool = ["drifter", "drifter"];
     if (n >= 2) pool.push("hunter");
     if (n >= 3) pool.push("shooter");
     if (n >= 4) pool.push("brute", "hunter");
-    if (n >= 6) pool.push("shooter", "brute");
+    if (n >= 6) pool.push("shooter", "brute", "hunter");
+    if (n >= 8) pool.push("hunter", "brute", "shooter", "shooter");
     if (n >= 9) pool.push("hunter", "brute", "shooter");
     for (let i = 0; i < count; i += 1) queue.push(pick(pool));
   }
   g.spawnQueue = queue;
   g.waveState = "spawning";
-  g.spawnTimer = n === 1 ? 0.35 : 0.5;
+  g.spawnTimer = n === 1 ? 0.25 : 0.35;
   banner(`DALGA ${n}`, boss ? "DEVRİYE ÇEKİRDEĞİ UYANDI" : `${queue.length} TEMAS BEKLENİYOR`);
   if (boss) audio.boss();
   else audio.wave();
@@ -58,7 +59,7 @@ function pickSpawnPoint() {
 
 function spawnPortal(type) {
   const pos = pickSpawnPoint();
-  const max = type === "boss" ? 1.4 : 0.7;
+  const max = type === "boss" ? 1.1 : 0.55;
   game.portals.push({ x: pos.x, y: pos.y, t: max, max, type });
   game.rings.push({
     x: pos.x,
@@ -76,8 +77,9 @@ function spawnEnemyAt(type, x, y) {
   const g = game;
   const cfg = TYPES[type];
   const boss = type === "boss";
-  const hpMul = boss ? 1 + Math.max(0, g.wave - 5) * 0.12 : 1 + (g.wave - 1) * 0.17;
-  const spMul = 1 + Math.min(0.5, (g.wave - 1) * 0.03);
+  const hpMul = boss ? 1 + Math.max(0, g.wave - 5) * 0.16 : 1 + (g.wave - 1) * 0.21;
+  const spMul = 1 + Math.min(0.6, (g.wave - 1) * 0.035);
+  const dmgMul = 1 + Math.min(0.55, (g.wave - 1) * 0.03);
   const e = {
     type,
     x,
@@ -88,7 +90,7 @@ function spawnEnemyAt(type, x, y) {
     hp: cfg.hp * hpMul,
     maxHp: cfg.hp * hpMul,
     speed: cfg.speed * spMul,
-    dmg: cfg.dmg,
+    dmg: cfg.dmg * dmgMul,
     score: cfg.score,
     xp: cfg.xp,
     color: cfg.color,
@@ -196,7 +198,7 @@ function killEnemy(e, angle) {
     spawnOrbs(e.x, e.y, 18);
     spawnPickup(e.x + rnd(-60, 60), e.y + rnd(-60, 60));
     p.shield = p.maxShield;
-    for (let i = 0; i < 4; i += 1) {
+    for (let i = 0; i < 5; i += 1) {
       spawnEnemyAt(i % 2 ? "hunter" : "drifter", e.x + rnd(-120, 120), e.y + rnd(-120, 120));
     }
     banner("ÇEKİRDEK KIRILDI", "ARENA TEMİZLENİYOR");
@@ -232,9 +234,9 @@ function damagePlayer(amount, source) {
     dmg -= absorbed;
   }
   p.hp -= dmg;
-  p.invuln = 0.58;
+  p.invuln = 0.5;
   p.hurt = 0.6;
-  p.shieldDelay = 3.4;
+  p.shieldDelay = 4.2;
   g.shake = Math.max(g.shake, 10);
   g.flash = Math.max(g.flash, 0.65);
   g.combo = 0;
@@ -277,7 +279,7 @@ function addXp(value) {
   while (g.xp >= g.xpNeed) {
     g.xp -= g.xpNeed;
     g.level += 1;
-    g.xpNeed = Math.round(7 + g.level * 3.4 + g.level * g.level * 0.45);
+    g.xpNeed = Math.round(9 + g.level * 4.2 + g.level * g.level * 0.55);
     g.pendingLevels += 1;
   }
 }
@@ -459,12 +461,12 @@ function updateWaves(dt) {
     g.spawnTimer -= dt;
     if (g.spawnQueue.length && g.spawnTimer <= 0) {
       const type = g.spawnQueue[0];
-      if (type !== "boss" && g.enemies.length >= 58) {
-        g.spawnTimer = 0.4;
+      if (type !== "boss" && g.enemies.length >= 70) {
+        g.spawnTimer = 0.3;
       } else {
         g.spawnQueue.shift();
         spawnPortal(type);
-        g.spawnTimer = type === "boss" ? 1.5 : Math.max(0.15, 0.46 - g.wave * 0.012);
+        g.spawnTimer = type === "boss" ? 1.2 : Math.max(0.11, 0.4 - g.wave * 0.014);
       }
     }
     if (!g.spawnQueue.length) g.waveState = "clearing";
@@ -472,13 +474,13 @@ function updateWaves(dt) {
 
   if (g.waveState === "clearing" && g.enemies.length === 0 && g.portals.length === 0 && g.spawnQueue.length === 0) {
     g.waveState = "clear";
-    g.clearTimer = 2.7;
+    g.clearTimer = 2.2;
     const bonus = 50 + g.wave * 20;
     g.score += bonus;
     banner("DALGA TEMİZ", `+${bonus} BONUS`);
     audio.clear();
     const p = g.player;
-    p.hp = Math.min(p.maxHp, p.hp + 10);
+    p.hp = Math.min(p.maxHp, p.hp + 5);
     p.shield = p.maxShield;
     p.shieldDelay = 0;
     g.rings.push({ x: p.x, y: p.y, r: 20, maxR: 190, life: 0.7, max: 0.7, color: C.green, w: 2 });
@@ -493,7 +495,7 @@ function updateWaves(dt) {
 
 /* ------------------------------------------------------- enemy tick */
 
-function enemyShoot(e, count = 1, spread = 0.1, speed = 215) {
+function enemyShoot(e, count = 1, spread = 0.1, speed = 238) {
   const g = game;
   const p = g.player;
   const base = Math.atan2(p.y - e.y, p.x - e.x);
@@ -507,7 +509,7 @@ function enemyShoot(e, count = 1, spread = 0.1, speed = 215) {
       r: 6,
       life: 8,
       color: e.type === "boss" ? C.magenta : C.violet,
-      dmg: e.type === "boss" ? 10 : 8,
+      dmg: e.type === "boss" ? 12 : 10,
       dead: false,
     });
   }
@@ -522,19 +524,19 @@ function bossAttack(e) {
   e.mode += 1;
   e.flash = 1;
   if (kind === 0) {
-    const n = 18;
+    const n = 22;
     const off = rnd(0, TAU);
     for (let i = 0; i < n; i += 1) {
       const a = off + (i / n) * TAU;
       g.ebullets.push({
         x: e.x + Math.cos(a) * e.r,
         y: e.y + Math.sin(a) * e.r,
-        vx: Math.cos(a) * 185,
-        vy: Math.sin(a) * 185,
+        vx: Math.cos(a) * 205,
+        vy: Math.sin(a) * 205,
         r: 7,
         life: 9,
         color: C.magenta,
-        dmg: 10,
+        dmg: 12,
         dead: false,
       });
     }
@@ -543,22 +545,22 @@ function bossAttack(e) {
   } else if (kind === 1) {
     const base = Math.atan2(p.y - e.y, p.x - e.x);
     for (let i = -2; i <= 2; i += 1) {
-      const a = base + i * 0.13;
+      const a = base + i * 0.115;
       g.ebullets.push({
         x: e.x + Math.cos(a) * e.r,
         y: e.y + Math.sin(a) * e.r,
-        vx: Math.cos(a) * 300,
-        vy: Math.sin(a) * 300,
+        vx: Math.cos(a) * 330,
+        vy: Math.sin(a) * 330,
         r: 6.5,
         life: 7,
         color: C.orange,
-        dmg: 10,
+        dmg: 12,
         dead: false,
       });
     }
     audio.enemyShot();
   } else {
-    for (let i = 0; i < 2; i += 1) {
+    for (let i = 0; i < 3; i += 1) {
       spawnEnemyAt(Math.random() < 0.5 ? "hunter" : "drifter", e.x + rnd(-80, 80), e.y + rnd(-80, 80));
     }
     g.rings.push({ x: e.x, y: e.y, r: e.r, maxR: 160, life: 0.5, max: 0.5, color: C.violet, w: 2 });
@@ -592,20 +594,20 @@ function updateEnemies(dt) {
         tx = -nx * e.speed;
         ty = -ny * e.speed;
       } else {
-        tx = -ny * e.speed * 0.8;
-        ty = nx * e.speed * 0.8;
+        tx = -ny * e.speed * 0.95;
+        ty = nx * e.speed * 0.95;
       }
       e.atk -= dt;
       if (e.atk <= 0) {
         bossAttack(e);
-        e.atk = Math.max(1.3, 2.3 - g.wave * 0.02);
+        e.atk = Math.max(0.95, 1.9 - g.wave * 0.03);
       }
     } else if (e.type === "hunter") {
       e.dashCd -= dt;
       if (e.dashT > 0) {
         e.dashT -= dt;
-        tx = e.dashDir.x * 640;
-        ty = e.dashDir.y * 640;
+        tx = e.dashDir.x * 700;
+        ty = e.dashDir.y * 700;
         accel = 20;
         if (Math.random() < 0.5) spark(e.x, e.y, C.amber, 1, 60);
       } else if (e.wind > 0) {
@@ -619,14 +621,14 @@ function updateEnemies(dt) {
       } else {
         tx = nx * e.speed;
         ty = ny * e.speed;
-        if (d < 560 && e.dashCd <= 0) {
-          e.wind = 0.4;
-          e.dashCd = rnd(2.0, 2.9);
+        if (d < 620 && e.dashCd <= 0) {
+          e.wind = 0.3;
+          e.dashCd = rnd(1.5, 2.3);
           e.flash = 0.6;
         }
       }
     } else if (e.type === "shooter") {
-      const want = 340;
+      const want = 380;
       if (d > want + 50) {
         tx = nx * e.speed;
         ty = ny * e.speed;
@@ -639,8 +641,8 @@ function updateEnemies(dt) {
       }
       e.fireT -= dt;
       if (e.fireT <= 0 && d < 820) {
-        e.fireT = Math.max(1.2, 2.4 - g.wave * 0.05) + rnd(0, 0.5);
-        enemyShoot(e, g.wave >= 9 ? 2 : 1, 0.1, 220);
+        e.fireT = Math.max(0.95, 2.1 - g.wave * 0.06) + rnd(0, 0.35);
+        enemyShoot(e, g.wave >= 7 ? 2 : 1, 0.1, 245);
       }
     } else if (e.type === "brute") {
       tx = nx * e.speed;
@@ -779,8 +781,8 @@ function updatePickups(dt) {
     it.life -= dt;
     it.phase += dt * 3;
     if (dist(p.x, p.y, it.x, it.y) < 26) {
-      p.hp = Math.min(p.maxHp, p.hp + 26);
-      floatText(it.x, it.y - 14, "+26", C.green, 12);
+      p.hp = Math.min(p.maxHp, p.hp + 20);
+      floatText(it.x, it.y - 14, "+20", C.green, 12);
       spark(it.x, it.y, C.green, 14, 180);
       audio.heal();
       continue;
