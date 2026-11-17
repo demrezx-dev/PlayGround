@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#05060d" />
+<meta name="description" content="NABER — hold to tether, release to sling, and nab the last light before the void closes in." />
+<title>NABER — The Void Nabber</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%23070b0a' stroke='%23caff4a' stroke-width='3'/%3E%3Cellipse cx='38' cy='30' rx='9' ry='11' fill='%23eafff4'/%3E%3Ccircle cx='41' cy='31' r='4' fill='%23070b0a'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+  <canvas id="stage" aria-label="NABER playfield"></canvas>
+  <div id="grain" aria-hidden="true"></div>
+  <div id="vignette" aria-hidden="true"></div>
+  <div id="edge-warning" aria-hidden="true"></div>
+
+  <div id="hud" class="hidden" aria-live="off">
+    <div class="hud-left">
+      <div class="hud-wave"><span id="wave-num">WAVE 1</span><span class="hud-rule"></span><span id="wave-name">DRIFT</span></div>
+      <div class="hud-hearts" id="hearts" aria-label="hull"></div>
+      <div class="hud-goal"><span id="goal-num">0</span><span class="slash">/</span><span id="goal-target">8</span><span class="label">NABBED</span></div>
+    </div>
+    <div class="hud-right">
+      <div class="hud-score-label">SCORE</div>
+      <div class="hud-score" id="score">0</div>
+      <div class="hud-best">BEST <span id="best">0</span></div>
+    </div>
+  </div>
+
+  <div id="combo" class="hidden" aria-hidden="true">
+    <div class="combo-row"><span id="combo-x">×2</span><span id="combo-label">CHAIN</span></div>
+    <div class="combo-bar"><i id="combo-fill"></i></div>
+  </div>
+
+  <div id="surge-meter" class="hidden">
+    <span>SURGE</span>
+    <div class="surge-bar"><i id="surge-fill"></i></div>
+  </div>
+
+  <div id="banner" aria-live="polite"><div class="banner-kicker" id="banner-kicker"></div><div class="banner-title" id="banner-title"></div><div class="banner-sub" id="banner-sub"></div></div>
+
+  <div id="hint" class="hidden">HOLD to tether &nbsp;·&nbsp; RELEASE to sling</div>
+
+  <div class="hud-buttons">
+    <button id="mute-btn" class="icon-btn" aria-label="Toggle sound" title="Sound (M)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9h4l5-4v14l-5-4H4z"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7"/><path class="wave2" d="M18.5 6a8.5 8.5 0 0 1 0 12"/><path class="slash" d="M3 3l18 18"/></svg>
+    </button>
+    <button id="pause-btn" class="icon-btn" aria-label="Pause" title="Pause (P)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+    </button>
+  </div>
+
+  <div class="screen" id="menu">
+    <div class="menu-frame">
+      <div class="brand-row"><span class="brand">NBR-SYS</span><span class="brand-line"></span><span class="brand">ORBIT&nbsp;07</span></div>
+      <div class="title-wrap">
+        <div class="title-shadow" aria-hidden="true">NABER</div>
+        <h1 class="title">NABER</h1>
+        <div class="title-sub">THE VOID NABBER</div>
+      </div>
+      <p class="pitch">The last light is falling into the dark.<br class="br-sm" /> Tether to the pylons. Sling yourself outward.<br class="br-sm" /> Nab every shard before the void takes the arena.</p>
+      <button id="play-btn" class="cta"><span class="cta-dot"></span><span>DIVE IN</span><span class="cta-key">↵</span></button>
+      <div class="control-strip">
+        <div class="control"><span class="glyph glyph-hold"></span><span><b>HOLD</b> anywhere to tether</span></div>
+        <div class="control"><span class="glyph glyph-release"></span><span><b>RELEASE</b> to sling</span></div>
+        <div class="control desktop-only"><span class="key">SPACE</span><span>keyboard tether</span></div>
+      </div>
+      <div class="menu-foot">
+        <span>BEST <b id="menu-best">0</b></span>
+        <span class="dot"></span>
+        <span>8 WAVES</span>
+        <span class="dot"></span>
+        <button id="menu-sound" class="sound-link" aria-pressed="false">SOUND ON</button>
+      </div>
+    </div>
+    <div class="menu-scrim"></div>
+  </div>
+
+  <div class="screen hidden" id="pause">
+    <div class="panel">
+      <div class="panel-kicker">SYSTEM HOLD</div>
+      <h2>PAUSED</h2>
+      <div class="stat-row">
+        <div><span>WAVE</span><b id="pause-wave">1</b></div>
+        <div><span>SCORE</span><b id="pause-score">0</b></div>
+        <div><span>HULL</span><b id="pause-hull">3</b></div>
+      </div>
+      <div class="panel-controls">
+        <p><b>HOLD</b> to fire the tether at the nearest pylon. <b>RELEASE</b> to sling.</p>
+        <p>Ram a void leech at full speed to destroy it. Golden shards trigger <b>SURGE</b>.</p>
+      </div>
+      <div class="btn-row">
+        <button id="resume-btn" class="cta small"><span>RESUME</span></button>
+        <button id="quit-btn" class="ghost">ABANDON RUN</button>
+        <button id="pause-sound" class="ghost" aria-pressed="false">SOUND ON</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen hidden" id="over">
+    <div class="panel over-panel">
+      <div class="panel-kicker" id="over-kicker">RUN TERMINATED</div>
+      <h2 id="over-title">EATEN BY<br />THE VOID</h2>
+      <p class="over-note" id="over-note"></p>
+      <div class="final-score-wrap">
+        <div class="final-score-label">FINAL SCORE</div>
+        <div class="final-score" id="final-score">0</div>
+        <div class="new-best hidden" id="new-best">★ NEW BEST ★</div>
+      </div>
+      <div class="stat-row">
+        <div><span>WAVE</span><b id="over-wave">1</b></div>
+        <div><span>SHARDS</span><b id="over-shards">0</b></div>
+        <div><span>BEST CHAIN</span><b id="over-chain">×1</b></div>
+      </div>
+      <div class="btn-row">
+        <button id="again-btn" class="cta small"><span>AGAIN</span></button>
+        <button id="menu-btn" class="ghost">MAIN MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="rotate-hint" class="hidden">Turn your device sideways for a wider arena.</div>
+</div>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
