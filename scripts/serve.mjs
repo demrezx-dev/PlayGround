@@ -84,7 +84,7 @@ const server = createServer((request, response) => {
 });
 
 server.listen(port, host, () => {
-  console.log(`Luma listening on http://${host}:${port} from ${root}`);
+  console.log(`PULSAR listening on http://${host}:${port} from ${root}`);
 });
 
 function shutdown(signal) {

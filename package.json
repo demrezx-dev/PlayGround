@@ -1,9 +1,9 @@
 {
-  "name": "luma-ai-image-studio",
+  "name": "pulsar-neon-arena",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Luma — a free, private, touch-first AI image studio.",
+  "description": "PULSAR \u2014 a neon arena survival shooter with waves, upgrades and bosses.",
   "scripts": {
     "build": "node scripts/build.mjs",
     "start": "bash start.sh",

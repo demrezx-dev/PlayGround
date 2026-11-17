@@ -49,21 +49,15 @@ if (process.platform === "linux") {
 
 const views = [
   { name: "desktop", viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, isMobile: false, hasTouch: false },
-  { name: "mobile", viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }
+  { name: "mobile", viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
 ];
 
 let browser;
 
 async function inspectCanvas(page) {
   return page.evaluate(() => {
-    const canvas = document.querySelector("#artCanvas");
-    const frame = document.querySelector("#artFrame");
-    if (!canvas || !frame) return { ok: false, reason: "artwork canvas is missing" };
-
-    const frameRect = frame.getBoundingClientRect();
-    if (frameRect.width < 140 || frameRect.height < 140) {
-      return { ok: false, reason: `artwork frame is too small (${frameRect.width}x${frameRect.height})` };
-    }
+    const canvas = document.querySelector("#game");
+    if (!canvas) return { ok: false, reason: "game canvas is missing" };
 
     let context;
     try {
@@ -75,7 +69,7 @@ async function inspectCanvas(page) {
 
     const image = context.getImageData(0, 0, canvas.width, canvas.height).data;
     const pixels = canvas.width * canvas.height;
-    const samples = 3000;
+    const samples = 4000;
     let minimum = 255;
     let maximum = 0;
     const buckets = new Set();
@@ -89,10 +83,10 @@ async function inspectCanvas(page) {
       buckets.add(`${image[offset] >> 4}:${image[offset + 1] >> 4}:${image[offset + 2] >> 4}`);
     }
 
-    if (maximum - minimum < 24) {
+    if (maximum - minimum < 28) {
       return { ok: false, reason: `canvas looks flat (luma range ${(maximum - minimum).toFixed(1)})` };
     }
-    if (buckets.size < 16) {
+    if (buckets.size < 18) {
       return { ok: false, reason: `canvas has too few colors (${buckets.size} buckets)` };
     }
 
@@ -100,11 +94,29 @@ async function inspectCanvas(page) {
       ok: true,
       width: canvas.width,
       height: canvas.height,
-      frame: { width: Math.round(frameRect.width), height: Math.round(frameRect.height) },
       lumaRange: Number((maximum - minimum).toFixed(1)),
-      colorBuckets: buckets.size
+      colorBuckets: buckets.size,
     };
   });
+}
+
+async function play(page, view) {
+  await page.click("#startBtn");
+  await page.waitForTimeout(700);
+
+  if (!view.isMobile) {
+    await page.mouse.move(980, 330);
+    await page.keyboard.down("d");
+    await page.waitForTimeout(700);
+    await page.keyboard.up("d");
+    await page.keyboard.down("w");
+    await page.waitForTimeout(450);
+    await page.keyboard.up("w");
+    await page.mouse.move(1150, 520);
+    await page.keyboard.press("Space");
+  }
+
+  await page.waitForTimeout(2600);
 }
 
 async function captureView(view) {
@@ -114,7 +126,7 @@ async function captureView(view) {
       viewport: view.viewport,
       deviceScaleFactor: view.deviceScaleFactor,
       isMobile: view.isMobile,
-      hasTouch: view.hasTouch
+      hasTouch: view.hasTouch,
     })
     .catch((error) => {
       throw transient(error);
@@ -146,36 +158,11 @@ async function captureView(view) {
     await page
       .waitForSelector('html[data-ready="true"]', { state: "attached", timeout: 30000 })
       .catch((error) => {
-        throw fail(new Error(`App never signalled ready: ${error.message}`), 1);
-      });
-
-    await page
-      .waitForSelector('#artCanvas[data-rendered="1"]', { state: "attached", timeout: 30000 })
-      .catch((error) => {
-        throw fail(new Error(`Artwork never rendered: ${error.message}`), 1);
+        throw fail(new Error(`Game never signalled ready: ${error.message}`), 1);
       });
 
     await page.evaluate(() => document.fonts.ready).catch(() => {});
-
-    await page.evaluate(() => {
-      const button = document.querySelector("#generateBtn");
-      if (button instanceof HTMLButtonElement) button.click();
-      window.scrollTo(0, 0);
-    });
-
-    await page
-      .waitForFunction(
-        () =>
-          document.body.dataset.generating === "false" &&
-          document.querySelector("#artCanvas")?.dataset.rendered === "1",
-        null,
-        { timeout: 30000 }
-      )
-      .catch((error) => {
-        throw fail(new Error(`Generation did not settle: ${error.message}`), 1);
-      });
-
-    await page.waitForTimeout(900);
+    await play(page, view);
     await page.evaluate(() => window.scrollTo(0, 0));
 
     const inspection = await inspectCanvas(page);
@@ -191,7 +178,7 @@ async function captureView(view) {
 
     log(
       `${view.name}: saved ${screenshotPath} (${inspection.width}x${inspection.height} canvas, ` +
-        `${inspection.frame.width}x${inspection.frame.height} frame, ${Date.now() - started}ms)`
+        `${inspection.colorBuckets} colors, ${Date.now() - started}ms)`
     );
   } finally {
     await context.close().catch(() => {});

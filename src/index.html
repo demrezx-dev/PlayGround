@@ -1,175 +1,173 @@
 <!doctype html>
-<html lang="en" data-ready="false">
+<html lang="tr" data-ready="false">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#04060c">
-  <meta name="description" content="Lumen — a neon arena survival game. Drift, dash, and burn the dark, one wave at a time.">
-  <title>LUMEN — Neon Arena Survival</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3CradialGradient id='g'%3E%3Cstop stop-color='%23eaffff'/%3E%3Cstop offset='.45' stop-color='%2364f0ff'/%3E%3Cstop offset='1' stop-color='%238a7bff'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%2304060c'/%3E%3Ccircle cx='32' cy='32' r='15' fill='none' stroke='url(%23g)' stroke-width='2' stroke-dasharray='58 18'/%3E%3Ccircle cx='32' cy='32' r='5' fill='url(%23g)'/%3E%3C/svg%3E">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#04050b">
+  <meta name="description" content="PULSAR — neon arenada hayatta kalma oyunu. Dalgaları kır, yükseltmeleri seç, rekoru kır.">
+  <title>PULSAR — Neon Arena</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2305060d'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%235ef2ff' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%23ff54be'/%3E%3Ccircle cx='32' cy='32' r='27' fill='none' stroke='%23ff54be' stroke-width='1.4' stroke-dasharray='4 7'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="./styles.css">
 </head>
-<body data-state="menu">
-  <canvas id="game" aria-label="Lumen game arena"></canvas>
-  <div class="grain" aria-hidden="true"></div>
+<body>
+  <canvas id="game" aria-label="Pulsar oyun alanı"></canvas>
 
-  <div class="hud" id="hud">
-    <header class="hud-top">
+  <header class="hud" id="hud" aria-hidden="true">
+    <div class="hud-col hud-left">
       <div class="brand">
         <span class="brand-mark" aria-hidden="true"><i></i></span>
-        <span class="brand-copy">
-          <strong>LUMEN</strong>
-          <span>Survival protocol</span>
-        </span>
+        <span class="brand-word">PULSAR<em>NEON ARENA</em></span>
       </div>
 
-      <div class="wave-chip" aria-live="polite">
-        <span class="wave-label">Wave</span>
-        <span class="wave-number" id="waveNum">01</span>
-        <span class="wave-track"><i id="waveFill"></i></span>
-        <span class="wave-left" id="waveLeft">0 left</span>
-      </div>
-
-      <div class="hud-right">
-        <div class="score-block">
-          <span class="hud-label">Score</span>
-          <span class="score-value" id="scoreValue">0</span>
-          <span class="combo-badge" id="comboBadge">×1</span>
+      <div class="vitals">
+        <div class="vitals-head">
+          <span class="tag">GÖVDE</span>
+          <span class="vitals-num"><b id="hpText">100</b><i id="hpMax">/ 100</i></span>
         </div>
-        <div class="hud-buttons">
-          <button class="hud-btn" id="soundBtn" type="button" aria-label="Mute sound" title="Mute sound">
-            <svg class="icon-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z"/><path d="M16 8.5a5 5 0 0 1 0 7"/><path d="M18.7 5.8a8.6 8.6 0 0 1 0 12.4"/></svg>
-            <svg class="icon-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z"/><path d="m16.5 9.5 5 5m0-5-5 5"/></svg>
-          </button>
-          <button class="hud-btn" id="pauseBtn" type="button" aria-label="Pause" title="Pause (Esc)">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg>
-          </button>
+        <div class="bar hp-bar">
+          <div class="hp-ghost" id="hpGhost"></div>
+          <div class="hp-fill" id="hpFill"></div>
+          <div class="hp-ticks" aria-hidden="true"></div>
+        </div>
+        <div class="shield-row">
+          <span class="shield-glyph" aria-hidden="true">◈</span>
+          <div class="bar shield-bar"><div id="shieldFill"></div></div>
+          <span class="shield-num" id="shieldText">50</span>
         </div>
       </div>
-    </header>
 
-    <div class="boss-bar" id="bossBar" hidden>
-      <span class="boss-name">Warden of the Ninth Gate</span>
-      <span class="boss-track"><i id="bossFill"></i></span>
+      <div class="chips" id="chips" aria-label="Alınan yükseltmeler"></div>
     </div>
 
-    <div class="wave-banner" id="waveBanner" aria-hidden="true">
-      <span class="banner-rule"></span>
-      <strong id="bannerTitle">Wave 01</strong>
-      <span class="banner-sub" id="bannerSub">The dark stirs</span>
-      <span class="banner-rule"></span>
+    <div class="hud-col hud-center">
+      <div class="score-cap">SKOR</div>
+      <div class="score" id="scoreVal">0</div>
+      <div class="combo-wrap">
+        <span class="combo" id="comboVal">x1.0</span>
+        <span class="combo-bar"><i id="comboFill"></i></span>
+      </div>
+      <div class="xp-row" aria-hidden="true">
+        <span class="xp-lv" id="levelVal">SV.1</span>
+        <span class="xp-bar"><i id="xpFill"></i></span>
+      </div>
     </div>
 
-    <footer class="hud-bottom">
-      <div class="hull-block">
-        <span class="hud-label">Hull</span>
-        <div class="hull-pips" id="hullPips"></div>
-        <div class="shield-pips" id="shieldPips"></div>
+    <div class="hud-col hud-right">
+      <div class="pills">
+        <div class="stat-pill"><span>DALGA</span><b id="waveVal">1</b></div>
+        <div class="stat-pill dim"><span>REKOR</span><b id="bestVal">0</b></div>
       </div>
+      <div class="hud-btns">
+        <button class="icon-btn" id="soundBtn" type="button" aria-label="Sesi aç veya kapat" title="Ses (M)">
+          <svg class="ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+          <svg class="ico-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="m16 9 5 6m0-6-5 6"/></svg>
+        </button>
+        <button class="icon-btn" id="pauseBtn" type="button" aria-label="Duraklat" title="Duraklat (P)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
 
-      <div class="overdrive-block" id="overdriveBlock">
-        <div class="od-head">
-          <span class="hud-label">Overdrive</span>
-          <span class="od-hint" id="odHint">E</span>
-        </div>
-        <div class="od-track"><i id="odFill"></i><span class="od-notch"></span></div>
-      </div>
-
-      <div class="dash-block">
-        <div class="od-head">
-          <span class="hud-label">Dash</span>
-          <span class="od-hint" id="dashHint">Space</span>
-        </div>
-        <div class="dash-track"><i id="dashFill"></i></div>
-      </div>
-    </footer>
+  <div class="boss-hud" id="bossHud" aria-hidden="true">
+    <div class="boss-name">DEVRİYE ÇEKİRDEĞİ</div>
+    <div class="boss-track"><div id="bossFill"></div><span class="boss-glint"></span></div>
   </div>
 
-  <div class="touch-pad" id="touchPad">
-    <button class="touch-btn" id="touchDash" type="button">DASH</button>
-    <button class="touch-btn accent" id="touchBurst" type="button">BURST</button>
+  <div class="dash-readout" id="dashReadout">
+    <div class="dash-ring"><i id="dashFill"></i></div>
+    <div class="dash-copy"><kbd>SPACE</kbd><span>ATIL</span></div>
+  </div>
+  <button class="dash-btn" id="dashBtn" type="button" aria-label="Atıl">ATIL</button>
+
+  <div class="banner" id="waveBanner" role="status">
+    <span class="banner-line" aria-hidden="true"></span>
+    <span class="banner-text" id="waveBannerText">DALGA 1</span>
+    <small class="banner-sub" id="waveBannerSub"></small>
+    <span class="banner-line" aria-hidden="true"></span>
   </div>
 
-  <div class="overlay overlay-start" id="startScreen">
-    <div class="start-panel">
-      <p class="kicker"><span class="kicker-line"></span>Sector 09 <span class="kicker-dim">/</span> last light standing</p>
-      <h1 class="game-title">LUMEN</h1>
-      <p class="tagline">Hold the last light.</p>
-      <p class="blurb">A neon arena survival run. Drift through the dark, dash through danger, and burn everything that moves before the Warden wakes.</p>
+  <div class="overlay show" id="startScreen">
+    <div class="panel start-panel">
+      <div class="eyebrow"><span class="dot"></span> SEKTÖR 07 · SİNYAL CANLI</div>
+      <h1 class="title">
+        <span class="title-word">PULSAR</span>
+        <em class="title-sub">NEON ARENA</em>
+      </h1>
+      <p class="lede">
+        Arenanın çekirdeğinde tek başınasın. Dalgalar hâlinde gelen sürüyü dağıt,
+        enerji kristallerini topla ve her seviyede yeni bir güç seç.
+      </p>
 
       <div class="start-actions">
-        <button class="btn-primary" id="startBtn" type="button">
-          <span>Begin run</span>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h14m0 0-5-5m5 5-5 5"/></svg>
+        <button class="cta" id="startBtn" type="button">
+          <span>OYUNA BAŞLA</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13m-5-5 5 5-5 5"/></svg>
         </button>
-        <div class="best-record">
-          <span class="hud-label">Best run</span>
-          <strong id="bestScore">0</strong>
-        </div>
+        <div class="best-start">REKOR <b id="startBest">0</b></div>
       </div>
 
-      <div class="control-row">
-        <span class="control-chip"><b>WASD</b> move</span>
-        <span class="control-chip"><b>Mouse</b> aim · auto-fire</span>
-        <span class="control-chip"><b>Space</b> dash</span>
-        <span class="control-chip"><b>E</b> overdrive</span>
+      <div class="how">
+        <div class="how-item"><kbd>W A S D</kbd><span>hareket</span></div>
+        <div class="how-item"><kbd class="wide">FARE</kbd><span>nişan</span></div>
+        <div class="how-item"><kbd>SPACE</kbd><span>atılma</span></div>
+        <div class="how-item"><kbd>P</kbd><span>duraklat</span></div>
       </div>
-      <p class="start-foot">Touch ready <span class="dot">·</span> No install <span class="dot">·</span> Runs offline</p>
-    </div>
-  </div>
 
-  <div class="overlay" id="upgradeScreen" hidden>
-    <div class="upgrade-panel">
-      <p class="kicker"><span class="kicker-line"></span>Wave <span id="upgradeWave">01</span> cleared</p>
-      <h2 class="overlay-title">Choose an <em>augmentation</em></h2>
-      <p class="overlay-sub">Every wave, the arena offers a gift. Take one.</p>
-      <div class="upgrade-grid" id="upgradeGrid"></div>
-      <p class="key-note">Press <b>1</b> <b>2</b> <b>3</b> to choose</p>
-    </div>
-  </div>
-
-  <div class="overlay overlay-pause" id="pauseScreen" hidden>
-    <div class="pause-panel">
-      <p class="kicker"><span class="kicker-line"></span>Signal held</p>
-      <h2 class="overlay-title">Paused</h2>
-      <p class="overlay-sub">The dark will wait. It has nowhere else to be.</p>
-      <div class="pause-actions">
-        <button class="btn-primary" id="resumeBtn" type="button"><span>Resume run</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button>
-        <button class="btn-ghost" id="quitBtn" type="button">End run</button>
-      </div>
-      <div class="pause-stats">
-        <div><span class="hud-label">Wave</span><strong id="pauseWave">1</strong></div>
-        <div><span class="hud-label">Score</span><strong id="pauseScore">0</strong></div>
-        <div><span class="hud-label">Kills</span><strong id="pauseKills">0</strong></div>
+      <div class="start-foot">
+        <span class="live-dot"></span> Otomatik ateş açık · Dokunmatikte otomatik nişan
       </div>
     </div>
   </div>
 
-  <div class="overlay overlay-dead" id="overScreen" hidden>
-    <div class="dead-panel">
-      <p class="kicker danger"><span class="kicker-line"></span>Signal lost</p>
-      <h2 class="overlay-title">Run <em>terminated</em></h2>
-      <div class="final-score">
-        <span class="hud-label">Final score</span>
-        <strong id="finalScore">0</strong>
-        <span class="new-best" id="newBest" hidden>New personal best</span>
+  <div class="overlay" id="levelScreen">
+    <div class="panel level-panel">
+      <div class="eyebrow center"><span class="dot magenta"></span> <span id="levelEyebrow">SEVİYE 2</span></div>
+      <h2 class="panel-title">YÜKSELTME SEÇ</h2>
+      <p class="panel-sub">Çekirdek yeniden şekilleniyor. Bir yol seç — seçim anında geçerli.</p>
+      <div class="cards" id="cards"></div>
+      <div class="card-hint"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> veya kartı tıkla</div>
+    </div>
+  </div>
+
+  <div class="overlay" id="pauseScreen">
+    <div class="panel small-panel">
+      <div class="eyebrow center"><span class="dot"></span> SİNYAL BEKLEMEDE</div>
+      <h2 class="panel-title">DURAKLATILDI</h2>
+      <p class="panel-sub">Nefes al. Sürü seni bekliyor.</p>
+      <div class="panel-actions">
+        <button class="cta" id="resumeBtn" type="button"><span>DEVAM ET</span></button>
+        <button class="ghost-btn" id="quitBtn" type="button">BAŞA DÖN</button>
       </div>
+      <div class="card-hint"><kbd>P</kbd> veya <kbd>ESC</kbd> ile devam</div>
+    </div>
+  </div>
+
+  <div class="overlay" id="deadScreen">
+    <div class="panel dead-panel">
+      <div class="eyebrow center"><span class="dot red"></span> SİNYAL KAYBOLDU</div>
+      <h2 class="panel-title">GÖVDE PARÇALANDI</h2>
       <div class="dead-stats">
-        <div><span class="hud-label">Wave reached</span><strong id="finalWave">1</strong></div>
-        <div><span class="hud-label">Kills</span><strong id="finalKills">0</strong></div>
-        <div><span class="hud-label">Best combo</span><strong id="finalCombo">×1</strong></div>
-        <div><span class="hud-label">Time alive</span><strong id="finalTime">0:00</strong></div>
+        <div class="dead-stat"><span>SKOR</span><b id="deadScore">0</b></div>
+        <div class="dead-stat"><span>DALGA</span><b id="deadWave">1</b></div>
+        <div class="dead-stat"><span>İMHA</span><b id="deadKills">0</b></div>
+        <div class="dead-stat"><span>REKOR</span><b id="deadBest">0</b></div>
       </div>
-      <div class="pause-actions">
-        <button class="btn-primary" id="retryBtn" type="button"><span>Run it again</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-6V1"/><path d="M20 7c-2.2-2.7-5.4-4-9-3.3A9 9 0 1 0 20.7 13"/></svg></button>
-        <button class="btn-ghost" id="menuBtn" type="button">Back to title</button>
+      <div class="record-tag" id="deadNew">YENİ REKOR</div>
+      <div class="panel-actions">
+        <button class="cta" id="retryBtn" type="button">
+          <span>TEKRAR DENE</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13m-5-5 5 5-5 5"/></svg>
+        </button>
+        <button class="ghost-btn" id="homeBtn" type="button">ANA EKRAN</button>
       </div>
-      <p class="dead-tip" id="deadTip"></p>
     </div>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="./app.js"></script>
+  <script src="./game.js"></script>
+  <script src="./combat.js"></script>
+  <script src="./render.js"></script>
 </body>
 </html>
